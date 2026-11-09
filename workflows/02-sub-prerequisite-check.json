@@ -1,0 +1,183 @@
+{
+  "name": "SUB · Prerequisite check (DB health + heartbeat)",
+  "nodes": [
+    {
+      "name": "Leírás",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -400
+      ],
+      "parameters": {
+        "content": "# Reusable sub-workflow · Prerequisite check\n\nRuns before every export: are both database instances reachable? Then it writes a heartbeat, so a silent stop shows up on the control sheet.",
+        "width": 1300,
+        "height": 240,
+        "color": 7
+      }
+    },
+    {
+      "name": "DB",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        220,
+        -130
+      ],
+      "parameters": {
+        "content": "### 1 · Database health\nOne probe per DB instance",
+        "width": 460,
+        "height": 320,
+        "color": 7
+      }
+    },
+    {
+      "name": "HB",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        780,
+        -130
+      ],
+      "parameters": {
+        "content": "### 2 · Heartbeat\nTimestamp to the control sheet",
+        "width": 460,
+        "height": 320,
+        "color": 7
+      }
+    },
+    {
+      "name": "Bemenet",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    },
+    {
+      "name": "DB-életjel (1. példány)",
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1,
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "retryOnFail": false,
+      "onError": "continueRegularOutput",
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- DB-életjel (1. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.db__letjel__1__p_ld_ny_\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
+      }
+    },
+    {
+      "name": "DB-életjel (2. példány)",
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1,
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "retryOnFail": false,
+      "onError": "continueRegularOutput",
+      "position": [
+        520,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- DB-életjel (2. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.db__letjel__2__p_ld_ny_\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
+      }
+    },
+    {
+      "name": "Heartbeat: idő",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        840,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Heartbeat: idő\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Heartbeat",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput",
+      "position": [
+        1080,
+        0
+      ],
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_CONTROL_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "YOUR_TAB"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Bemenet": {
+      "main": [
+        [
+          {
+            "node": "DB-életjel (1. példány)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB-életjel (1. példány)": {
+      "main": [
+        [
+          {
+            "node": "DB-életjel (2. példány)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB-életjel (2. példány)": {
+      "main": [
+        [
+          {
+            "node": "Heartbeat: idő",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Heartbeat: idő": {
+      "main": [
+        [
+          {
+            "node": "Heartbeat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

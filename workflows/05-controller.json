@@ -1,0 +1,1486 @@
+{
+  "name": "Controller · Report export (calls the 4 sub-workflows)",
+  "nodes": [
+    {
+      "name": "Leírás",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -400
+      ],
+      "parameters": {
+        "content": "# INF-001 · Report export controller\n\nPolls the control sheet; for each requested period it selects the companies and calls the **reusable sub-workflows**: prerequisite check · Report package: Payroll · Report package: VAT (both call the shared **HTML → PDF** sub-workflow).",
+        "width": 1500,
+        "height": 200,
+        "color": 7
+      }
+    },
+    {
+      "name": "Sáv fo",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -150
+      ],
+      "parameters": {
+        "content": "### 1 · Request intake → company selection\nReads the control sheet, runs the prerequisite sub-workflow, takes a run lock, reads the client register",
+        "width": 3180,
+        "height": 330,
+        "color": 7
+      }
+    },
+    {
+      "name": "Sáv ber",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        310
+      ],
+      "parameters": {
+        "content": "### 2 · Payroll loop\nLock → loop per company → **Report package: Payroll** (sub-workflow) → summary → write-back → log",
+        "width": 3180,
+        "height": 530,
+        "color": 7
+      }
+    },
+    {
+      "name": "Sáv afa",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        970
+      ],
+      "parameters": {
+        "content": "### 3 · VAT loop\nSame pattern → **Report package: VAT** (sub-workflow)",
+        "width": 3180,
+        "height": 530,
+        "color": 7
+      }
+    },
+    {
+      "name": "Sáv hiba",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        1630
+      ],
+      "parameters": {
+        "content": "### 4 · Shared result & stop paths\nConfig error, DB stop, write-back error → log + control-sheet status",
+        "width": 1620,
+        "height": 530,
+        "color": 7
+      }
+    },
+    {
+      "name": "Indítás (teszt)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "name": "Vezérlő olvasás",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_CONTROL_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "YOUR_TAB"
+        }
+      }
+    },
+    {
+      "name": "Config: időszak",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "onError": "continueErrorOutput",
+      "position": [
+        780,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Config: időszak\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Napló: konfig-hiba",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        1780
+      ],
+      "parameters": {
+        "jsCode": "// Napló: konfig-hiba\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Vezérlő: konfig-hiba",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        1980
+      ],
+      "parameters": {
+        "jsCode": "// Vezérlő: konfig-hiba\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Napló: visszaírás-hiba",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        1780
+      ],
+      "parameters": {
+        "jsCode": "// Napló: visszaírás-hiba\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Van futtatható cég?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        260,
+        460
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "van-e-futtathato",
+              "leftValue": "={{ $json.adoszam_torzs }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "name": "Van-e kérés?",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Van-e kérés?\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Futás-zár",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Futás-zár\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Kijelölés",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "position": [
+        2080,
+        0
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_CONTROL_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "YOUR_TAB"
+        }
+      }
+    },
+    {
+      "name": "Regiszter (1. példány)",
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1,
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput",
+      "position": [
+        2600,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Regiszter (1. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.regiszter__1__p_ld_ny_\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
+      }
+    },
+    {
+      "name": "Napló: leállás",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        1780
+      ],
+      "parameters": {
+        "jsCode": "// Napló: leállás\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Napló (leállás)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput",
+      "position": [
+        1040,
+        1780
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_CONTROL_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "YOUR_TAB"
+        }
+      }
+    },
+    {
+      "name": "Vezérlő: eredmény",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2860,
+        460
+      ],
+      "parameters": {
+        "jsCode": "// Vezérlő: eredmény\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Vezérlő: leállás",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        1980
+      ],
+      "parameters": {
+        "jsCode": "// Vezérlő: leállás\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Vezérlő frissítés (leállás)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput",
+      "position": [
+        520,
+        1780
+      ],
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_CONTROL_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "YOUR_TAB"
+        }
+      }
+    },
+    {
+      "name": "Vezérlő frissítés",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput",
+      "position": [
+        1300,
+        1780
+      ],
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_CONTROL_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "YOUR_TAB"
+        }
+      }
+    },
+    {
+      "name": "ÁFA-lista",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "alwaysOutputData": true,
+      "position": [
+        0,
+        1120
+      ],
+      "parameters": {
+        "jsCode": "// ÁFA-lista\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "BÉR-lista",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "alwaysOutputData": true,
+      "position": [
+        0,
+        460
+      ],
+      "parameters": {
+        "jsCode": "// BÉR-lista\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Ciklus: ÁFA",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1300,
+        1120
+      ],
+      "parameters": {
+        "options": {}
+      }
+    },
+    {
+      "name": "Ciklus: BÉR",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1300,
+        460
+      ],
+      "parameters": {
+        "options": {}
+      }
+    },
+    {
+      "name": "Összegzés: ÁFA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        1120
+      ],
+      "parameters": {
+        "jsCode": "// Összegzés: ÁFA\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Összegzés: BÉR",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        460
+      ],
+      "parameters": {
+        "jsCode": "// Összegzés: BÉR\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Zárolás: adat",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        460
+      ],
+      "parameters": {
+        "jsCode": "// Zárolás: adat\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Zárolás",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        780,
+        460
+      ],
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_CONTROL_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "YOUR_TAB"
+        }
+      }
+    },
+    {
+      "name": "Kijelölt kör",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        460
+      ],
+      "parameters": {
+        "jsCode": "// Kijelölt kör\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Visszaírás: adat",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1820,
+        460
+      ],
+      "parameters": {
+        "jsCode": "// Visszaírás: adat\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Visszaírás",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput",
+      "position": [
+        2080,
+        460
+      ],
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_CONTROL_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "YOUR_TAB"
+        }
+      }
+    },
+    {
+      "name": "Napló: sorok",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2340,
+        460
+      ],
+      "parameters": {
+        "jsCode": "// Napló: sorok\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Napló",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput",
+      "position": [
+        2600,
+        460
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_CONTROL_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "YOUR_TAB"
+        }
+      }
+    },
+    {
+      "name": "Van futtatható cég? (ÁFA)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        260,
+        1120
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "van-e-futtathato-afa",
+              "leftValue": "={{ $json.adoszam_torzs }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "name": "Zárolás: adat (ÁFA)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        1120
+      ],
+      "parameters": {
+        "jsCode": "// Zárolás: adat (ÁFA)\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Zárolás (ÁFA)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "position": [
+        780,
+        1120
+      ],
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_CONTROL_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "YOUR_TAB"
+        }
+      }
+    },
+    {
+      "name": "Kijelölt kör (ÁFA)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        1120
+      ],
+      "parameters": {
+        "jsCode": "// Kijelölt kör (ÁFA)\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Visszaírás: adat (ÁFA)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1820,
+        1120
+      ],
+      "parameters": {
+        "jsCode": "// Visszaírás: adat (ÁFA)\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Visszaírás (ÁFA)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "position": [
+        2080,
+        1120
+      ],
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_CONTROL_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "YOUR_TAB"
+        }
+      }
+    },
+    {
+      "name": "Napló: sorok (ÁFA)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2340,
+        1120
+      ],
+      "parameters": {
+        "jsCode": "// Napló: sorok (ÁFA)\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Napló (ÁFA)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput",
+      "position": [
+        2600,
+        1120
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_CONTROL_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "YOUR_TAB"
+        }
+      }
+    },
+    {
+      "name": "Vezérlő: eredmény (ÁFA)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2860,
+        1120
+      ],
+      "parameters": {
+        "jsCode": "// Vezérlő: eredmény (ÁFA)\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Napló: visszaírás-hiba (ÁFA)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        1980
+      ],
+      "parameters": {
+        "jsCode": "// Napló: visszaírás-hiba (ÁFA)\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Ketnyelvu (kérések)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "position": [
+        1560,
+        0
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_CONTROL_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "YOUR_TAB"
+        }
+      }
+    },
+    {
+      "name": "Egy elem (kétnyelvű)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1820,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Egy elem (kétnyelvű)\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Regiszter (2. példány)",
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1,
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput",
+      "position": [
+        2340,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Regiszter (2. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.regiszter__2__p_ld_ny_\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
+      }
+    },
+    {
+      "name": "Regiszter: aktív ügyfelek",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2860,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Regiszter: aktív ügyfelek\n// Production logic is client-owned and not published.\n// This stub passes items through so the workflow imports and the wiring can be inspected.\nreturn $input.all();"
+      }
+    },
+    {
+      "name": "Előfeltétel-ellenőrzés",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        520,
+        0
+      ],
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_ID_OF:unknown"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "name": "Riportcsomag: BÉR",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1560,
+        660
+      ],
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_ID_OF:unknown"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "name": "Riportcsomag: ÁFA",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1560,
+        1320
+      ],
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_ID_OF:unknown"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Indítás (teszt)": {
+      "main": [
+        [
+          {
+            "node": "Vezérlő olvasás",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vezérlő olvasás": {
+      "main": [
+        [
+          {
+            "node": "Előfeltétel-ellenőrzés",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config: időszak": {
+      "main": [
+        [
+          {
+            "node": "Van-e kérés?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Napló: konfig-hiba",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Vezérlő: konfig-hiba",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Napló: konfig-hiba": {
+      "main": [
+        [
+          {
+            "node": "Napló (leállás)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vezérlő: konfig-hiba": {
+      "main": [
+        [
+          {
+            "node": "Vezérlő frissítés (leállás)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Napló: visszaírás-hiba": {
+      "main": [
+        [
+          {
+            "node": "Napló (leállás)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Van-e kérés?": {
+      "main": [
+        [
+          {
+            "node": "Futás-zár",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kijelölés": {
+      "main": [
+        [
+          {
+            "node": "Regiszter (2. példány)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Napló: leállás": {
+      "main": [
+        [
+          {
+            "node": "Napló (leállás)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vezérlő: leállás": {
+      "main": [
+        [
+          {
+            "node": "Vezérlő frissítés (leállás)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Napló": {
+      "main": [
+        [
+          {
+            "node": "Vezérlő: eredmény",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vezérlő: eredmény": {
+      "main": [
+        [
+          {
+            "node": "Vezérlő frissítés",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ÁFA-lista": {
+      "main": [
+        [
+          {
+            "node": "Van futtatható cég? (ÁFA)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BÉR-lista": {
+      "main": [
+        [
+          {
+            "node": "Van futtatható cég?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Van futtatható cég?": {
+      "main": [
+        [
+          {
+            "node": "Zárolás: adat",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Összegzés: BÉR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zárolás: adat": {
+      "main": [
+        [
+          {
+            "node": "Zárolás",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zárolás": {
+      "main": [
+        [
+          {
+            "node": "Kijelölt kör",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kijelölt kör": {
+      "main": [
+        [
+          {
+            "node": "Ciklus: BÉR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Összegzés: BÉR": {
+      "main": [
+        [
+          {
+            "node": "Visszaírás: adat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Visszaírás: adat": {
+      "main": [
+        [
+          {
+            "node": "Visszaírás",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Visszaírás": {
+      "main": [
+        [
+          {
+            "node": "Napló: sorok",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Napló: visszaírás-hiba",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Napló: sorok": {
+      "main": [
+        [
+          {
+            "node": "Napló",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ciklus: ÁFA": {
+      "main": [
+        [
+          {
+            "node": "Összegzés: ÁFA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Riportcsomag: ÁFA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ciklus: BÉR": {
+      "main": [
+        [
+          {
+            "node": "Összegzés: BÉR",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Riportcsomag: BÉR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Összegzés: ÁFA": {
+      "main": [
+        [
+          {
+            "node": "Visszaírás: adat (ÁFA)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Van futtatható cég? (ÁFA)": {
+      "main": [
+        [
+          {
+            "node": "Zárolás: adat (ÁFA)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Összegzés: ÁFA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zárolás: adat (ÁFA)": {
+      "main": [
+        [
+          {
+            "node": "Zárolás (ÁFA)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zárolás (ÁFA)": {
+      "main": [
+        [
+          {
+            "node": "Kijelölt kör (ÁFA)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kijelölt kör (ÁFA)": {
+      "main": [
+        [
+          {
+            "node": "Ciklus: ÁFA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Visszaírás: adat (ÁFA)": {
+      "main": [
+        [
+          {
+            "node": "Visszaírás (ÁFA)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Visszaírás (ÁFA)": {
+      "main": [
+        [
+          {
+            "node": "Napló: sorok (ÁFA)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Napló: visszaírás-hiba (ÁFA)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Napló: sorok (ÁFA)": {
+      "main": [
+        [
+          {
+            "node": "Napló (ÁFA)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Napló (ÁFA)": {
+      "main": [
+        [
+          {
+            "node": "Vezérlő: eredmény (ÁFA)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vezérlő: eredmény (ÁFA)": {
+      "main": [
+        [
+          {
+            "node": "Vezérlő frissítés",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Napló: visszaírás-hiba (ÁFA)": {
+      "main": [
+        [
+          {
+            "node": "Napló (leállás)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Futás-zár": {
+      "main": [
+        [
+          {
+            "node": "Ketnyelvu (kérések)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ketnyelvu (kérések)": {
+      "main": [
+        [
+          {
+            "node": "Egy elem (kétnyelvű)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Egy elem (kétnyelvű)": {
+      "main": [
+        [
+          {
+            "node": "Kijelölés",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Regiszter (2. példány)": {
+      "main": [
+        [
+          {
+            "node": "Regiszter (1. példány)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Napló: leállás",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Vezérlő: leállás",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Regiszter (1. példány)": {
+      "main": [
+        [
+          {
+            "node": "Regiszter: aktív ügyfelek",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Napló: leállás",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Vezérlő: leállás",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Regiszter: aktív ügyfelek": {
+      "main": [
+        [
+          {
+            "node": "ÁFA-lista",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "BÉR-lista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Előfeltétel-ellenőrzés": {
+      "main": [
+        [
+          {
+            "node": "Config: időszak",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Riportcsomag: BÉR": {
+      "main": [
+        [
+          {
+            "node": "Ciklus: BÉR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Riportcsomag: ÁFA": {
+      "main": [
+        [
+          {
+            "node": "Ciklus: ÁFA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

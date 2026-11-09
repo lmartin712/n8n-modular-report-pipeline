@@ -1,0 +1,107 @@
+{
+  "name": "SUB · HTML to PDF (Gotenberg, portrait/landscape A4)",
+  "nodes": [
+    {
+      "name": "Leírás",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -300
+      ],
+      "parameters": {
+        "content": "# Reusable sub-workflow · HTML → PDF\n\nAny workflow can call this one.\n\n**In:** HTML + `pdf_tajolas` (portrait / landscape)\n**Out:** PDF binary, A4\n\nEngine: Gotenberg (self-hosted, Chromium)",
+        "width": 540,
+        "height": 480,
+        "color": 7
+      }
+    },
+    {
+      "name": "Bemenet",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    },
+    {
+      "name": "Gotenberg: HTML → PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput",
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://gotenberg:3000/forms/chromium/convert/html",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "files",
+              "inputDataFieldName": "files"
+            },
+            {
+              "name": "paperWidth",
+              "value": "={{ $json.pdf_tajolas === 'fekvo' ? '297mm' : '210mm' }}"
+            },
+            {
+              "name": "paperHeight",
+              "value": "={{ $json.pdf_tajolas === 'fekvo' ? '210mm' : '297mm' }}"
+            },
+            {
+              "name": "marginTop",
+              "value": "5mm"
+            },
+            {
+              "name": "marginBottom",
+              "value": "5mm"
+            },
+            {
+              "name": "marginLeft",
+              "value": "5mm"
+            },
+            {
+              "name": "marginRight",
+              "value": "5mm"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Bemenet": {
+      "main": [
+        [
+          {
+            "node": "Gotenberg: HTML → PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
