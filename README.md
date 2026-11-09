@@ -1,6 +1,8 @@
 # Modular n8n report pipeline
 
-An n8n report-export pipeline built for an accounting firm, split into a controller and four reusable sub-workflows. Every month it produces 8 reports per client company (4 payroll, 4 VAT) from an on-premise SQL Server database, renders them to PDF and files them into each client's folder.
+An n8n report-export pipeline built for an accounting firm, split into a controller and four reusable sub-workflows. Every month it produces each client company's payroll and VAT reports from an on-premise SQL Server database, renders them to PDF and files them into each client's folder.
+
+This repository shows the core payroll and VAT reports. Other documents the firm receives (for example tax-form files, or statements that go through a separate channel) are handled by separate workflows and are not included here.
 
 The production version has run unattended since September 2026. This repository is a **sanitized copy** of its structure: node names, wiring, loops and sticky notes are real. Every SQL query, Code-node body, spreadsheet ID, credential and file path has been replaced with a stub. The production logic belongs to the client and is not published.
 
