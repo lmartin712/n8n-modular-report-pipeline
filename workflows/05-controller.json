@@ -258,7 +258,7 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Regiszter (1. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.regiszter__1__p_ld_ny_\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
+        "query": "-- Regiszter (1. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.regiszter_1_peldany\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
       }
     },
     {
@@ -811,7 +811,7 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Regiszter (2. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.regiszter__2__p_ld_ny_\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
+        "query": "-- Regiszter (2. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.regiszter_2_peldany\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
       }
     },
     {

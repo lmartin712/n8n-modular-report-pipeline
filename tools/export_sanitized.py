@@ -4,7 +4,7 @@ Kept: node names, types, positions, connections, sticky notes, IF/loop/merge str
 Replaced: every SQL query, every Code-node body, Sheets document/sheet IDs, credentials, file paths, workflow IDs.
 Run from anywhere: python export_sanitized.py
 """
-import io, json, os, re, sys, urllib.request
+import io, json, os, re, sys, unicodedata, urllib.request
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 BASE = "http://127.0.0.1:5678/api/v1"
@@ -39,8 +39,10 @@ def code_stub(name):
 
 def sql_stub(name):
     rep = name.split(":", 1)[-1].strip() if ":" in name else name
+    rep = unicodedata.normalize("NFKD", rep).encode("ascii", "ignore").decode()
+    tabla = re.sub(r"_+", "_", re.sub(r"[^a-z0-9]+", "_", rep.lower())).strip("_")[:40]
     return (f"-- {name}\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\n"
-            f"SELECT *\nFROM demo.{re.sub(r'[^a-z0-9_]', '_', rep.lower())[:40]}\n"
+            f"SELECT *\nFROM demo.{tabla}\n"
             "WHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';")
 
 

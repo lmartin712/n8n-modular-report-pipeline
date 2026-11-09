@@ -72,7 +72,7 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- DB-életjel (1. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.db__letjel__1__p_ld_ny_\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
+        "query": "-- DB-életjel (1. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.db_eletjel_1_peldany\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
       }
     },
     {
@@ -89,7 +89,7 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- DB-életjel (2. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.db__letjel__2__p_ld_ny_\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
+        "query": "-- DB-életjel (2. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.db_eletjel_2_peldany\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
       }
     },
     {

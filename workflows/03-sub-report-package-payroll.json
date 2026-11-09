@@ -153,7 +153,7 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Extract: utalando_havonta (2. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.utalando_havonta__2__p_ld_ny_\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
+        "query": "-- Extract: utalando_havonta (2. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.utalando_havonta_2_peldany\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
       }
     },
     {
@@ -243,7 +243,7 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Extract: utalando_matrix (2. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.utalando_matrix__2__p_ld_ny_\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
+        "query": "-- Extract: utalando_matrix (2. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.utalando_matrix_2_peldany\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
       }
     },
     {
@@ -345,7 +345,7 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Extract: fizetesi_bizonylat (2. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.fizetesi_bizonylat__2__p_ld_ny_\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
+        "query": "-- Extract: fizetesi_bizonylat (2. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.fizetesi_bizonylat_2_peldany\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
       }
     },
     {
@@ -435,7 +435,7 @@
       ],
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Extract: letiltas (2. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.letiltas__2__p_ld_ny_\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
+        "query": "-- Extract: letiltas (2. példány)\n-- Illustrative query on a fictional schema; the production SQL is client-owned.\nSELECT *\nFROM demo.letiltas_2_peldany\nWHERE company_id = {{ $json.company_id }}\n  AND period = '{{ $json.period }}';"
       }
     },
     {
